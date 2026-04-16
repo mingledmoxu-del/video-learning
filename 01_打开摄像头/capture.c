@@ -1,25 +1,26 @@
-#include <stdio.h>      // 标准输入输出头文件，提供 printf, perror 等函数
-#include <stdlib.h>     // 标准库头文件，提供 exit, malloc, free 等函数
-#include <string.h>     // 字符串操作头文件，提供 memset 等函数
-#include <fcntl.h>      // 文件控制头文件，提供 open() 函数及 O_RDWR 等宏
-#include <unistd.h>     // UNIX 标准头文件，提供 close(), read(), write() 等函数
-#include <sys/ioctl.h>  // I/O 控制头文件，提供 ioctl() 函数用于与驱动交互
-#include <sys/mman.h>   // 内存映射头文件，提供 mmap(), munmap() 函数
+#include <errno.h>           // 错误码头文件，用于获取系统调用的错误信息
+#include <fcntl.h>           // 文件控制头文件，提供 open() 函数及 O_RDWR 等宏
 #include <linux/videodev2.h> // V4L2 核心头文件，定义了视频采集接口的所有结构体和宏
-#include <errno.h>      // 错误码头文件，用于获取系统调用的错误信息
+#include <stdio.h>           // 标准输入输出头文件，提供 printf, perror 等函数
+#include <stdlib.h>          // 标准库头文件，提供 exit, malloc, free 等函数
+#include <string.h>          // 字符串操作头文件，提供 memset 等函数
+#include <sys/ioctl.h>       // I/O 控制头文件，提供 ioctl() 函数用于与驱动交互
+#include <sys/mman.h>        // 内存映射头文件，提供 mmap(), munmap() 函数
+#include <unistd.h>          // UNIX 标准头文件，提供 close(), read(), write() 等函数
 
 /**
  * 嵌入式 Linux V4L2 摄像头采集示例 (单帧抓取)
  * V4L2 (Video for Linux Two) 是 Linux 内核中关于视频设备的内核驱动标准。
- * 流程：打开设备 -> 查询能力 -> 设置格式 -> 申请缓冲区 -> 内存映射 -> 缓冲区入队 -> 启动流 -> 采集数据 -> 停止流 -> 释放资源
+ * 流程：打开设备 -> 查询能力 -> 设置格式 -> 申请缓冲区 -> 内存映射 -> 缓冲区入队 -> 启动流 -> 采集数据 -> 停止流 ->
+ * 释放资源
  */
 
-#define WIDTH  640      // 定义期望采集的视频宽度
-#define HEIGHT 480      // 定义期望采集的视频高度
+#define WIDTH 640               // 定义期望采集的视频宽度
+#define HEIGHT 480              // 定义期望采集的视频高度
 #define VIDEO_DEV "/dev/video0" // 指定摄像头设备节点路径
 
 int main() {
-    int fd;             // 文件描述符，用于索引打开的摄像头设备
+    int fd; // 文件描述符，用于索引打开的摄像头设备
 
     /**
      * 【结构体：v4l2_capability】
@@ -71,8 +72,8 @@ int main() {
      */
     struct v4l2_buffer buf;
 
-    void *buffer_start; // 指向用户空间映射后的缓冲区起始地址
-    enum v4l2_buf_type type; // 定义流类型变量，用于启动/关闭流
+    void              *buffer_start; // 指向用户空间映射后的缓冲区起始地址
+    enum v4l2_buf_type type;         // 定义流类型变量，用于启动/关闭流
 
     // 1. 打开摄像头设备
     // 以可读写、阻塞模式打开视频设备
@@ -103,7 +104,7 @@ int main() {
     // 设置期望的高度
     fmt.fmt.pix.height = HEIGHT;
     // 设置像素格式为 YUYV格式 (每4个字节代表2个像素)
-    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; 
+    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
     // 设置场扫描方式为隔行扫描（取决于摄像头支持，通常设为 V4L2_FIELD_ANY 或具体值）
     fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 
@@ -221,4 +222,3 @@ int main() {
     printf("程序退出。\n");
     return 0; // 返回成功
 }
-
